@@ -3,10 +3,10 @@
 
 ## Step 2: Use your favorite SOQL tool to get a list of accounts.
 
-![](https://raw.githubusercontent.com/kbowerma/brownbag1.2/master/img/img1.png)
+![](./img/img1.png) 
 
 good we have some accounts.   Now look for contacts.  
-![](https://raw.githubusercontent.com/kbowerma/brownbag1.2/master/img/img2.png)
+![](./img/img2.png) 
 
 Oh Shoot it looks like we have some work to do.  Lets start with a NodeJS script to randomly make some names.  Lets assume you have node js installed and you are somewhat familar with the package manager called npm.
 
