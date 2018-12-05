@@ -1,0 +1,1 @@
+DELETE [select id, name, MobilePhone, email, accountId from contact WHERE CreatedDate = LAST_N_DAYS:10];

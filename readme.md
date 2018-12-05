@@ -47,6 +47,7 @@ for ( i=0; i<99; i++ ){
     console.log(output.toString());
 };
 ```
+## Command 3: generate a file with 99 faker contacts
 Now we can run it and redirect the output to a csv file:
 
 ```node newNames.js > newcontacts.csv```
@@ -63,6 +64,7 @@ sfdx  force:data:soql:query -q "select id, firstname, lastname, MobilePhone, ema
 ![](img/img5.png)
 
 Ok good, I am in the right org and just 4 contacts.  Now lets run the sfdx command to import the data.
+## Command 4: insert the 99 contacts
 
  ```
  sfdx force:data:bulk:upsert -f newcontacts.csv -s contact -i Id -w 2 -u wave
@@ -75,12 +77,16 @@ Ok good, I am in the right org and just 4 contacts.  Now lets run the sfdx comma
 
  ![](img/img7.png)
 
- We see the 100 new contact there so lets modify this query to just get the contacts we created today and  slightly so we can export it to csv.  We just need to add ```-r csv``` to the end to format the output to csv.
+ We see the 99 new contact there so lets modify this query to just get the contacts we created today and  slightly so we can export it to csv.  We just need to add ```-r csv``` to the end to format the output to csv.
  
- ```sfdx  force:data:soql:query -q "select id, firstname, lastname, MobilePhone, email from contact where createddate=TODAY" -u wave  -r csv  > todaysSFDCContacts.csv ```
+ ## Command 5: get the ids of the 99 new contacts
+ ```
+ sfdx force:data:soql:query -q "select id, firstname, lastname, MobilePhone, email from contact where createddate=TODAY" -u wave  -r csv  > todaysSFDCContacts.csv 
+ ```
 
 Notice that query also gives us the Ids which we will need later.  So lets do the same thing to the Accounts so we can assgin the Contacts to Account.   First lets just get the accounts and throw the names in there for fun.  
 
+## Command 6: get the accounts and stow it away
 ```
 sfdx  force:data:soql:query -q "select id, name from account" -u wave -r csv > accounts.csv
 ```
@@ -127,8 +133,12 @@ rd.on('line', function(line) {
 ```
 The 'on' method of the readline library is a built in iterator and takes a variable for the iterator name ```line```  and then the call back.  If the linenumber is greater than 1 (quick way to skip the old header) the output array is written to the consloe.  We can redirect the console to a output file that we then send to Salesforce.
 
+## Command 7: Run the faker script to generate two new fields to update out contacts
 ```
 node assignFields.js  > updateContacts.csv
+```
+## Command 8: update saleforce with the new fields
+```
 sfdx force:data:bulk:upsert -f updateContacts.csv -s Contact -i Id -w 2 -u wave
 ```
 and we can use sfdx to show the new results:
@@ -138,6 +148,73 @@ sfdx  force:data:soql:query -q "select id, firstname, lastname, MobilePhone, ema
  ![](img/img8.png)
 
 Yup!   Looks good.
+
+Next I want to assign these 99 contacts to 1 of 10 accounts so I will randomly select 10 accounts but I suspect that my accounts.csv file has order to it (i.e. persona accounts first, alphapetical, ordered by state...) so I so not want to simply take the first 10 with ``` head -10 accounts > 10accounts.csv```, instead I want to take 1o randmom rows.   I can do this with ```shuf``` (aliased from gshuf)  __This is very important,   When ever you take a sample of a data file, always make sure it is random__.     Just for fun I am going to add an index number to my  accounts so you can see that the row numbers are really random.   Here is what it look like before.
+ ![](img/img9.png)
+ And after I run the following command and redirect the output to a new file called ___accountsWlines.csv___
+ 
+ ## Command 9: add line number to accounts (just for fun) 
+ ```awk '{print NR","$0}' accounts.csv > indexedAccounts.csv```
+![](img/img10.png)
+
+Now lets get a real random sample of 10 accounts.  
+### Command 10: get a random sample of 10 accounts
+```gshuf -n 10 indexedAccounts.csv  > 10accounts.csv```
+
+You can see by the row number in front of the id that we truely have a random grab of 10 accounts from this file.
+
+![](img/img11.png)
+
+Now we have a file ( _10accounts.csv_ ) with 10 accounts and we have another file with 100 contacts (_updateContacts.csv_).   Both of these files have the Salesforce Ids but they have a different length.   Luckliy we can use shuf again with a repeat switch to generate a account file with 100 rows.  Let write alittle script that will take 100 contact ids and account ids and laminate them together.
+
+Create a new file called ___join2Accounts.sh___ and paste in the following:
+
+```bash
+echo "Id,AccountId"
+awk  -F"," 'NR>1 {print $1}' updateContacts.csv > c.tmp
+gshuf -n 99 -r 10accounts.csv | awk  -F"," '{print $2}' > a.tmp
+lam c.tmp -s , a.tmp
+rm a.tmp c.tmp
+```
+
+and run the script and redirct to _contactWithAccountsUpdate.csv_
+
+## Command 11: generate a laminated file of 99 contacts with 1 of the 10 accounts
+```
+sh join2Accounts.sh > contactWithAccountsUpdate.csv
+```
+
+Before we update the contacts lets run a quick check to see that our contacts don't belong to any accounts:
+
+```
+sfdx force:data:soql:query -q "select id, firstname, lastname, MobilePhone, email, accountId from contact " -u wave
+```
+and we should see the final column is __null__, so lets go ahead and update the contacts with sfdx.
+
+## Command 12: update the contacts with the account ids
+```
+sfdx force:data:bulk:upsert -f contactWithAccountsUpdate.csv -s contact -i Id -w 2 -u wave
+```
+
+and show:
+
+```
+sfdx force:data:soql:query -q "select id, firstname, lastname, MobilePhone, email, accountId from contact " -u wave
+```
+
+
+and now from the begining lets automate the whole thing:
+
+```bash
+#empty the contacts:
+
+
+
+
+
+ 
+
+
 
 
 ## Other Unix goodiess
