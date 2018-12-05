@@ -258,6 +258,41 @@ sfdx force:data:bulk:upsert -f contactWithAccountsUpdate.csv -s contact -i Id -w
 
 
 
-## Other Unix goodiess
-1. head: select the top x lines of a file
-1. gshuf - shuffles the rows of a file,  good to be ued with head to get a random sampling
+## Other Unix Kit
+1. **head -n** select the top n lines of a file
+1. **gshuf** - shuffles the rows of a file,  good to be ued with head to get a random sampling
+    * -n N, N=number or time to pluck a row
+    *  -r allows for repeats 
+1. **awk**  The command line untility to parse columnar data
+   * NR is the builtin variable for Row Number
+   * $n var for column number n
+   * $0 var for the whole row
+1. **lam** laminates to files to together
+    * -s define the seperator for the two files
+1. **echo** prints the line to the console
+1.  **> (the redirect)** send the output to a file instead of the console
+1. **| (the pipe)** chain the output of one command to the input of another.
+1.  **jot** prints sequential or random data (not used here)
+1. **jq** a command line json parser and query tool (I love this but dont use it here)
+1.  **sed** streaming editor
+
+
+## BONUS BONUS BONUS KIT
+
+This script is a sample of anonymous apex that allows you to update massive amounts of records in your org via anonymous apex.  
+
+```Java
+List<Contact> con = new List<Contact>();
+for (Contact tmp  : [select id FROM contact where createddate = TODAY ] ) {
+    Integer rand = Math.round(Math.random()*100);
+    tmp.Title = 'Employee Number '+String.valueof(rand);
+    tmp.Phone = '555-1212';
+con.add(tmp);
+}
+Update con;
+```
+
+This script is save as bonus.apex and can be run from sfdx too.
+
+```sfdx force:apex:execute -f bonus.apex -u wave ``` 
+
