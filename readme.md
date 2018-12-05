@@ -1,3 +1,4 @@
+This tutorial will give some basic examples to used [sfdx](https://developer.salesforce.com/tools/sfdxcli) (Salesforce cli) to (1) Pull data from an org, (2) push data to an org, and (3) run anonymous apex to update some data.  It also will demostrate some examples of using fakerJS to generate synthetic data and other useful unix tools to add in this process.
 
 #### Step 1:  Install SFDX and connect to an dev org.
 
